@@ -17,7 +17,7 @@ from teleop_interfaces.msg import AxisCmd, ButtonCmd
 from std_msgs.msg import Header
 
 ##### Paths to calibration files
-PATH = "./src/Teleoperation_Module/evdev_teleop/conf/"
+PATH = "./src/Evdev_Teleoperation/evdev_teleop/conf/"
 CALIB_AXES = "axes_calib.json"
 CALIB_BUTTONS = "buttons_calib.json"
 
@@ -134,6 +134,9 @@ class ControllerNode(Node):
 			msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
 			msg.header.frame_id = "Axis_" +  str(self.axis_dict[key][0]) + "_Cmd"
 			msg.axis_cmd = self.actual_axis[key]
+			msg.min_value = self.axis_dict[key][1][0]
+			msg.max_value = self.axis_dict[key][1][1]
+			msg.steady_value = self.axis_dict[key][1][2]
 			self.axis_publishers[key].publish(msg)
 
 	def publish_button(self):

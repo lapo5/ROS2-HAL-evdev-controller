@@ -14,7 +14,7 @@ import statistics
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
 ##### Paths to calibration files
-PATH = "./src/Teleoperation_Module/evdev_teleop/conf/"
+PATH = "./src/Evdev_Teleoperation/evdev_teleop/conf/"
 CALIB_AXES = "axes_calib.json"
 CALIB_BUTTONS = "buttons_calib.json"
 
