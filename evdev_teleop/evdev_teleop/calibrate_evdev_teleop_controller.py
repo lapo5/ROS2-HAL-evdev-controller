@@ -8,6 +8,7 @@ import json
 import os
 import threading
 import shutil
+import statistics
 
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
@@ -127,12 +128,20 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						print(values)
 						print(minimum_value)	
 						print(maximum_value)		
 						break
 
-			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value]]
+
+			
+			steady_value = input("Enter Steady Value the Axis")
+
+			try:
+				steady_value = int(steady_value)
+			except:
+				steady_value = math.ceil((maximum_value - minimum_value) / 2)
+
+			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value, steady_value]]
 
 			# Reset the local dictionary
 			cmd_candidates = dict()
@@ -182,6 +191,21 @@ class CalibrateControllerNode(Node):
 
 		return is_enough, minumum, maximum
 	
+	### This function check the subject command to be stored
+	def check_steady_value_cmd(self, candidates,lim_size):
+
+		best_candidate_len = 0
+		is_enough = False
+		steady_value = None
+
+		# Solve a maximum problem with a threshold given by lim_size
+		if len(candidates) >= lim_size:
+			
+			is_enough = True
+			steady_value = statistics.median(candidates)
+
+		return is_enough, steady_value
+	
 
 	### This function check the subject command to be stored
 	def check_maximum_cmd(self, candidates,lim_size):
@@ -219,6 +243,7 @@ class CalibrateControllerNode(Node):
 		if input("Do you want to save this calibration? [y/else]:\t") == "y":
 
 			# If an axes calibration is available, store it in axes_calib.json
+			PRINT(self.resources_path)
 			if os.path.exists(self.resources_path):
 				shutil.rmtree(self.resources_path)
 			os.mkdir(self.resources_path)

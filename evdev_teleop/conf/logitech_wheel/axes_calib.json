@@ -1,0 +1,1 @@
+{"0": ["STEERING_WHEEL", [0, 255, 128]], "1": ["PEDAL", [0, 255, 128]], "17": ["ARROW_TOP_DOWN", [-1, 1, 0]], "16": ["ARROW_LEFT_RIGHT", [-1, 1, 0]], "3": ["LEFT_ANALOG_AX1", [0, 255, 128]], "2": ["LEFT_ANALOG_AX2", [0, 255, 128]], "5": ["RIGHT_ANALOG_AX1", [0, 255, 128]], "4": ["RIGHT_ANALOG_AX2", [0, 255, 128]]}

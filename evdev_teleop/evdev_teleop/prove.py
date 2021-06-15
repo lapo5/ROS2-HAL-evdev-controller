@@ -6,7 +6,7 @@ devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 for device in devices:
 	print(device.path, device.name, device.phys)
 
-device = evdev.InputDevice('/dev/input/event2')
+device = evdev.InputDevice('/dev/input/event3')
 print(device)
 
 

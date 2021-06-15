@@ -10,6 +10,7 @@ import threading
 import shutil
 import time
 import sys
+import math
 
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
@@ -101,7 +102,7 @@ class ControllerNode(Node):
 		if self.is_axis:
 			self.actual_axis = self.axis_dict.copy()
 			for key in self.axis_dict.keys():
-				self.actual_axis[key] = self.axis_dict[key][1][1] // 2
+				self.actual_axis[key] = self.axis_dict[key][1][2]
 
 		# Initialize button cmd at 0
 		if self.is_button:
