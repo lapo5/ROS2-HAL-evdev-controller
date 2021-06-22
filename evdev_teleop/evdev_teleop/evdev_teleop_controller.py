@@ -3,6 +3,7 @@
 ##### Libraries
 import rclpy
 from rclpy.node import Node
+import evdev
 from evdev import InputDevice, ecodes
 import json
 import os
@@ -33,11 +34,20 @@ class ControllerNode(Node):
 
 		self.get_logger().info("Controller node is awake...")
 
-		self.declare_parameter("event", "event2")
+		self.declare_parameter("event", "discovery_event")
 		self.declare_parameter("controller_name", "logitech_panel")
 
 		self.controller_name = self.get_parameter("controller_name").value
 		self.event = self.get_parameter("event").value
+
+		if self.event == "discovery_event":
+
+			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+			for device in devices:
+				if device.name == "Mad Catz Saitek Side Panel Control Deck":
+					print("Found on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+
 
 		self.dev_address = DEV_ADDR + str(self.event)
 
