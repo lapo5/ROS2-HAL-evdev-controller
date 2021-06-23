@@ -127,7 +127,7 @@ class ControllerNode(Node):
 		while not self.error and not self.end:
 			device = InputDevice(self.dev_address)
 			for event in device.read_loop():
-				if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT):
+				if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT) and (event.type != 4):
 					self.actual_axis[str(event.code)] = event.value 
 				elif self.is_button and str(event.code) in self.button_dict.keys():
 					self.actual_button[str(event.code)] = event.value
