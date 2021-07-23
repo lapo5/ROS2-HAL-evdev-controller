@@ -14,7 +14,12 @@ import statistics
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
 ##### Paths to calibration files
-PATH = "./src/Evdev_Teleoperation/evdev_teleop/conf/"
+from ament_index_python.packages import get_package_share_directory
+
+package_share_directory = get_package_share_directory('evdev_teleop')
+# Path to store the calibration file
+PATH = package_share_directory + "/conf/"
+
 CALIB_AXES = "axes_calib.json"
 CALIB_BUTTONS = "buttons_calib.json"
 
@@ -278,9 +283,9 @@ def main(args=None):
 	try:
 		rclpy.spin(node)
 	except KeyboardInterrupt:
-		print('Node stopped cleanly')
+		print('EvDev Calibration Node stopped cleanly')
 	except BaseException:
-		print('Exception in node:', file=sys.stderr)
+		print('Exception in Node EvDev Calibration:', file=sys.stderr)
 		raise
 	finally:
 		# Destroy the node explicitly

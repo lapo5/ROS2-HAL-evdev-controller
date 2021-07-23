@@ -6,7 +6,7 @@
   <name>teleop_interfaces</name>
   <version>0.0.0</version>
   <description>Interfaces for EvDev Device</description>
-  <maintainer email="alessandro.scarciglia-somministrato@thalesaleniaspace.com ">Alessandro Scarciglia</maintainer>
+  <maintainer email="alessandro.scarciglia-somministrato@thalesaleniaspace.com">Alessandro Scarciglia</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
