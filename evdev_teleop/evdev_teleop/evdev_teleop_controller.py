@@ -52,6 +52,7 @@ class ControllerNode(Node):
 					print("Found on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 
+		sys.stdout.flush()  # Flush screen output
 
 		self.dev_address = DEV_ADDR + str(self.event)
 
