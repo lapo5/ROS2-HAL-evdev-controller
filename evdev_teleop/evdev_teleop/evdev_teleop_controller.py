@@ -52,6 +52,7 @@ class ControllerNode(Node):
 					print("Found on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 
+		sys.stdout.flush()  # Flush screen output
 
 		self.dev_address = DEV_ADDR + str(self.event)
 
@@ -105,8 +106,8 @@ class ControllerNode(Node):
 			self.thread1.start()
 
 			# Timers for both axis and buttons publishers
-			self.axis_timer = self.create_timer(0.1, self.publish_axis)
-			self.button_timer = self.create_timer(0.1, self.publish_button)
+			self.axis_timer = self.create_timer(0.02, self.publish_axis) #50 Hz
+			self.button_timer = self.create_timer(0.05, self.publish_button) #20 Hz
 
 	
 
