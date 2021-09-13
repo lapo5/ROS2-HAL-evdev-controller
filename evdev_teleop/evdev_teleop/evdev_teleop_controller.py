@@ -39,7 +39,7 @@ class ControllerNode(Node):
 		self.get_logger().info("Controller node is awake...")
 
 		self.declare_parameter("event", "discovery_event")
-		self.declare_parameter("controller_name", "logitech_panel")
+		self.declare_parameter("controller_name", "discovery")
 
 		self.controller_name = self.get_parameter("controller_name").value
 		self.event = self.get_parameter("event").value
@@ -49,7 +49,7 @@ class ControllerNode(Node):
 			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 			for device in devices:
 				if device.name == "Mad Catz Saitek Side Panel Control Deck":
-					print("Found on path: {0}".format(device.path))
+					print("Found LogitechPanel on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "logitech_panel"
 
