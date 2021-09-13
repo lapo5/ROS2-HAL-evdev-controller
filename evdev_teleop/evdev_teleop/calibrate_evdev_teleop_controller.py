@@ -9,6 +9,10 @@ import os
 import threading
 import shutil
 import statistics
+import evdev
+from evdev import InputDevice, ecodes
+import sys
+import math
 
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
@@ -35,7 +39,7 @@ class CalibrateControllerNode(Node):
 
 		self.get_logger().info("Controller node is awake...")
 
-		self.declare_parameter("event", "event2")
+		self.declare_parameter("event", "discovery_event")
 		self.declare_parameter("controller_name", "logitech_panel")
 
 		self.controller_name = self.get_parameter("controller_name").value
@@ -54,21 +58,39 @@ class CalibrateControllerNode(Node):
 		self.actual_button = dict()
 		self.actual_axis = dict()
 
+
+		if self.event == "discovery_event":
+			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+			for device in devices:
+				print("Found {0} on path: {1}".format(device.name, device.path))
+				self.event = device.path.split('/')[-1]
+				self.controller_name = "PS4_Joystick"
+
+		sys.stdout.flush()  # Flush screen output
+
+		self.dev_address = DEV_ADDR + str(self.event)
+
 		self.resources_path = PATH + self.controller_name + "/"
 		print(self.resources_path)
 
 		# Upload calibration data
 		# Axes/buttons calibration if required
 		while not self.stop_calib:
-			if input("Calibrate the axes? [y/else]:\t") == "y":
+			key = input("Calibrate the axes? [y/else]:\t")
+			
+			# Fast check after input
+			if key == "Y" or key == 'y':
 				print("Calibration of the axes started...")
-				self.axis_dict = self.calibrate_controller(300)
+				self.axis_dict = self.calibrate_controller_axes(300)
 				self.get_logger().info("Calibration is over...")
 				self.is_axis = True
 
-			if input("Calibrate the buttons? [y/else]:\t") == "y":
+			key = input("Calibrate the buttons? [y/else]:\t")
+			
+			# Fast check after input
+			if key == "Y" or key == 'y':
 				print("Calibration of the buttons started...")
-				self.button_dict = self.calibrate_controller(10)
+				self.button_dict = self.calibrate_controller_buttons(10)
 				self.get_logger().info("Calibration is over...")
 				self.is_button = True
 
@@ -77,7 +99,7 @@ class CalibrateControllerNode(Node):
 				break
 
 	### This function defines a dictionary with command name and range of values
-	def calibrate_controller(self, size_th):
+	def calibrate_controller_axes(self, size_th):
 
 		# Initialization of some variables
 		key = None;
@@ -155,7 +177,76 @@ class CalibrateControllerNode(Node):
 		print(cmd_dict)
 		return cmd_dict
 
-	
+	### This function defines a dictionary with command name and range of values
+	def calibrate_controller_buttons(self, size_th):
+
+		# Initialization of some variables
+		key = None;
+		cmd_candidates = dict()
+		cmd_dict = dict()
+
+		while(key != "Q"):
+			key = input("Type the name of the command to be registered or press Q to terminate.\n")
+			
+			# Fast check after input
+			if key == "Q" or key == 'q':
+				break
+
+			# Iterate all the registered events
+			
+			input("Press Enter and Start Moving Button")
+
+			device = InputDevice(self.dev_address)
+			for event in device.read_loop():
+
+				# Discard the syncronization event
+				if event.type != ecodes.SYN_REPORT and event.code != 4:
+					
+					# Initialize the event if never happend so far
+					if event.code not in cmd_candidates.keys():
+						cmd_candidates[event.code] = []
+					
+					# Save the event value in a list
+					cmd_candidates[event.code].append(event.value)
+
+					# If enough values have been acquired break the loop
+					ret, cmd_code = self.check_subject_cmd(cmd_candidates, size_th)
+
+					if ret:
+						print("cmd_code: {0}".format(cmd_code))
+
+				
+						break
+
+			input("Press Enter and Move Button Again")
+			values = []
+			for event in device.read_loop():
+
+				# Discard the syncronization event
+				if event.type != ecodes.SYN_REPORT and event.code != 4:
+
+					
+					# Save the event value in a list
+					if event.code == cmd_code:
+						values.append(event.value)
+
+					# If enough values have been acquired break the loop
+					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
+
+					if ret:		
+						print(minimum_value)	
+						print(maximum_value)		
+						break
+
+			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value]]
+
+			# Reset the local dictionary
+			cmd_candidates = dict()
+
+
+		print(cmd_dict)
+		return cmd_dict
+
 
 	### This function check the subject command to be stored
 	def check_subject_cmd(self, candidates, lim_size):

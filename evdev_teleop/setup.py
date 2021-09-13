@@ -14,6 +14,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'conf', 'logitech_panel'), glob("conf/logitech_panel/*")),
         (os.path.join('share', package_name, 'conf', 'logitech_wheel'), glob("conf/logitech_wheel/*")),
+        (os.path.join('share', package_name, 'conf', 'ps4_joystick'), glob("conf/ps4_joystick/*")),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
