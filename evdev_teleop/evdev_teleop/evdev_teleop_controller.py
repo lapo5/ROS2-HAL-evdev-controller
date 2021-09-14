@@ -16,6 +16,7 @@ import math
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 from std_msgs.msg import Header
+from std_srvs.srv import Empty
 
 from ament_index_python.packages import get_package_share_directory
 ##### Paths to calibration files
@@ -79,6 +80,9 @@ class ControllerNode(Node):
 
 		self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
 
+        # Service: stop acquisition
+        self.stop_service = self.create_service(Empty, "/evdev_controller/stop", self.stop)
+
 		# Upload calibration data
 		try:
 			with open(self.resources_path+CALIB_AXES, "r") as readfile:
@@ -115,7 +119,12 @@ class ControllerNode(Node):
 			self.axis_timer = self.create_timer(0.02, self.publish_axis) #50 Hz
 			self.button_timer = self.create_timer(0.05, self.publish_button) #20 Hz
 
-	
+
+    # This function stops/enable the acquisition stream
+    def stop(self, request, response):
+        self.end = True
+
+        return response
 
 	### This function remaps the axis and buttons and sets their initial value
 	def initialize_cmds(self):
@@ -147,29 +156,31 @@ class ControllerNode(Node):
 
 
 	def publish_axis(self):
-		for key in self.actual_axis.keys():
-			msg = AxisCmd()
-			now = time.time()
-			msg.header = Header()
-			msg.header.stamp.sec = int(now)
-			msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
-			msg.header.frame_id = "Axis_" +  str(self.axis_dict[key][0]) + "_Cmd"
-			msg.axis_cmd = self.actual_axis[key]
-			msg.min_value = self.axis_dict[key][1][0]
-			msg.max_value = self.axis_dict[key][1][1]
-			msg.steady_value = self.axis_dict[key][1][2]
-			self.axis_publishers[key].publish(msg)
+		if not self.end:
+			for key in self.actual_axis.keys():
+				msg = AxisCmd()
+				now = time.time()
+				msg.header = Header()
+				msg.header.stamp.sec = int(now)
+				msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
+				msg.header.frame_id = "Axis_" +  str(self.axis_dict[key][0]) + "_Cmd"
+				msg.axis_cmd = self.actual_axis[key]
+				msg.min_value = self.axis_dict[key][1][0]
+				msg.max_value = self.axis_dict[key][1][1]
+				msg.steady_value = self.axis_dict[key][1][2]
+				self.axis_publishers[key].publish(msg)
 
 	def publish_button(self):
-		for key in self.actual_button.keys():
-			msg = ButtonCmd()
-			now = time.time()
-			msg.header = Header()
-			msg.header.stamp.sec = int(now)
-			msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
-			msg.header.frame_id = "Button_" +  str(self.button_dict[key][0]) + "_Cmd"
-			msg.button_cmd = self.actual_button[key]
-			self.button_publishers[key].publish(msg)
+		if not self.end:
+			for key in self.actual_button.keys():
+				msg = ButtonCmd()
+				now = time.time()
+				msg.header = Header()
+				msg.header.stamp.sec = int(now)
+				msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
+				msg.header.frame_id = "Button_" +  str(self.button_dict[key][0]) + "_Cmd"
+				msg.button_cmd = self.actual_button[key]
+				self.button_publishers[key].publish(msg)
 
 	def exit(self):
 		self.end = True
