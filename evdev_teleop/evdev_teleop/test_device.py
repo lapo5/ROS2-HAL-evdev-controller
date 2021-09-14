@@ -16,7 +16,7 @@ for device in devices:
 		print("Found Wheel/Pedal on path: {0}".format(device.path))
 		event = device.path.split('/')[-1]
 
-	if device.name == "Sony Computer Entertainment Wireless Controller":
+	if device.name == "Sony Computer Entertainment Wireless Controller" or device.name == "Wireless Controller":
 		print("Found PS4 Joystick on path: {0}".format(device.path))
 		event = device.path.split('/')[-1]
 
