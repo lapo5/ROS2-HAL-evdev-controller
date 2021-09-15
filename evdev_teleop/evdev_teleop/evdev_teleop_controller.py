@@ -59,6 +59,11 @@ class ControllerNode(Node):
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "ps4_joystick"
 
+                if device.name == "CONTROLLER XARM":
+                    print("Found Joystick Slide Winder on path: {0}".format(device.path))
+                    self.event = device.path.split('/')[-1]
+                    self.controller_name = "slide_winder"
+
         sys.stdout.flush()  # Flush screen output
 
         self.dev_address = DEV_ADDR + str(self.event)
