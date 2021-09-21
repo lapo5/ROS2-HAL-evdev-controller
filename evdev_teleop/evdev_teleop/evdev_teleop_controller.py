@@ -16,7 +16,7 @@ import math
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 from std_msgs.msg import Header
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, Trigger
 
 from ament_index_python.packages import get_package_share_directory
 ##### Paths to calibration files
@@ -42,6 +42,8 @@ class ControllerNode(Node):
         self.declare_parameter("event", "discovery_event")
         self.declare_parameter("controller_name", "discovery")
 
+        self.found = False
+
         self.controller_name = self.get_parameter("controller_name").value
         self.event = self.get_parameter("event").value
 
@@ -53,83 +55,100 @@ class ControllerNode(Node):
                     print("Found LogitechPanel on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "logitech_panel"
+                    self.found = True
 
                 if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
                     print("Found PS4 Joystick on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "ps4_joystick"
+                    self.found = True
 
                 if device.name == "CONTROLLER XARM":
                     print("Found Joystick Slide Winder on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "slide_winder"
+                    self.found = True
 
         sys.stdout.flush()  # Flush screen output
 
-        self.dev_address = DEV_ADDR + str(self.event)
-
-        self.error = False
-        self.end = False
-
-        self.is_axis = False
-        self.is_button = False
-
-        self.axis_dict = None
-        self.button_dict = None
-
-        self.actual_button = dict()
-        self.actual_axis = dict()
-
-        self.resources_path = PATH + self.controller_name + "/"
-        print(self.resources_path)
-
-        self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
-
         # Service: stop acquisition
-        self.stop_service = self.create_service(Empty, "/evdev_controller/stop", self.stop)
+        self.is_init_service = self.create_service(Trigger, "/evdev_controller/is_init", self.is_init)
+        
+        if self.found:
+            self.dev_address = DEV_ADDR + str(self.event)
 
-        # Upload calibration data
-        try:
-            with open(self.resources_path+CALIB_AXES, "r") as readfile:
-                self.axis_dict = json.load(readfile)
-            with open(self.resources_path+CALIB_BUTTONS, "r") as readfile:
-                self.button_dict = json.load(readfile)
+            self.error = False
+            self.end = False
 
-            if self.axis_dict != None: self.is_axis = True
-            if self.button_dict != None: self.is_button = True
+            self.is_axis = False
+            self.is_button = False
 
-        except:
-            self.error = True
-            print("Calibrate Controller First!")
+            self.axis_dict = None
+            self.button_dict = None
 
-        if not self.error:
-            # Definition of the publisher functions
-            if self.is_button:
-                self.button_publishers = dict()
-                for button in self.button_dict.keys():
-                    name = self.button_dict[button][0]
-                    self.button_publishers[button] = self.create_publisher(ButtonCmd, "teleop_cmd/button/"+name, 10)
+            self.actual_button = dict()
+            self.actual_axis = dict()
 
-            if self.is_axis:
-                self.axis_publishers = dict()
-                for axis in self.axis_dict.keys():
-                    name = self.axis_dict[axis][0]
-                    self.axis_publishers[axis] = self.create_publisher(AxisCmd, "teleop_cmd/axis/"+name, 10)
-            
-            # Start of the commands update thread
-            self.initialize_cmds()
-            self.thread1.start()
+            self.resources_path = PATH + self.controller_name + "/"
+            print(self.resources_path)
 
-            # Timers for both axis and buttons publishers
-            self.axis_timer = self.create_timer(0.02, self.publish_axis) #50 Hz
-            self.button_timer = self.create_timer(0.05, self.publish_button) #20 Hz
+            self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
 
+            # Service: stop acquisition
+            self.stop_service = self.create_service(Empty, "/evdev_controller/stop", self.stop)
+
+            # Upload calibration data
+            try:
+                with open(self.resources_path+CALIB_AXES, "r") as readfile:
+                    self.axis_dict = json.load(readfile)
+                with open(self.resources_path+CALIB_BUTTONS, "r") as readfile:
+                    self.button_dict = json.load(readfile)
+
+                if self.axis_dict != None: self.is_axis = True
+                if self.button_dict != None: self.is_button = True
+
+            except:
+                self.error = True
+                print("Calibrate Controller First!")
+
+            if not self.error:
+                # Definition of the publisher functions
+                if self.is_button:
+                    self.button_publishers = dict()
+                    for button in self.button_dict.keys():
+                        name = self.button_dict[button][0]
+                        self.button_publishers[button] = self.create_publisher(ButtonCmd, "teleop_cmd/button/"+name, 10)
+
+                if self.is_axis:
+                    self.axis_publishers = dict()
+                    for axis in self.axis_dict.keys():
+                        name = self.axis_dict[axis][0]
+                        self.axis_publishers[axis] = self.create_publisher(AxisCmd, "teleop_cmd/axis/"+name, 10)
+                
+                # Start of the commands update thread
+                self.initialize_cmds()
+                self.thread1.start()
+
+                # Timers for both axis and buttons publishers
+                self.axis_timer = self.create_timer(0.02, self.publish_axis) #50 Hz
+                self.button_timer = self.create_timer(0.05, self.publish_button) #20 Hz
+        else:
+            self.get_logger().info("No EvDev Controller found, check connection!")
 
     # This function stops/enable the acquisition stream
     def stop(self, request, response):
         self.end = True
 
         return response
+
+
+    # This function stops/enable the acquisition stream
+    def is_init(self, request, response):
+        
+        response.success = self.found
+
+        return response
+
 
     ### This function remaps the axis and buttons and sets their initial value
     def initialize_cmds(self):
