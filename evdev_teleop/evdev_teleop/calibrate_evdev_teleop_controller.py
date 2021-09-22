@@ -40,7 +40,7 @@ class CalibrateControllerNode(Node):
 		self.get_logger().info("Controller node is awake...")
 
 		self.declare_parameter("event", "discovery_event")
-		self.declare_parameter("controller_name", "logitech_panel")
+		self.declare_parameter("controller_name", "None")
 
 		self.controller_name = self.get_parameter("controller_name").value
 		self.event = self.get_parameter("event").value
@@ -58,13 +58,30 @@ class CalibrateControllerNode(Node):
 		self.actual_button = dict()
 		self.actual_axis = dict()
 
+        self.found = False
 
 		if self.event == "discovery_event":
-			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-			for device in devices:
-				print("Found {0} on path: {1}".format(device.name, device.path))
-				self.event = device.path.split('/')[-1]
-				self.controller_name = "PS4_Joystick"
+			
+            devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+            for device in devices:
+                if device.name == "Mad Catz Saitek Side Panel Control Deck":
+                    print("Found LogitechPanel on path: {0}".format(device.path))
+                    self.event = device.path.split('/')[-1]
+                    self.controller_name = "logitech_panel"
+                    self.found = True
+
+                if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
+                    print("Found PS4 Joystick on path: {0}".format(device.path))
+                    self.event = device.path.split('/')[-1]
+                    self.controller_name = "ps4_joystick"
+                    self.found = True
+
+                if device.name == "CONTROLLER XARM":
+                    print("Found Joystick Slide Winder on path: {0}".format(device.path))
+                    self.event = device.path.split('/')[-1]
+                    self.controller_name = "slide_winder"
+                    self.found = True
+
 
 		sys.stdout.flush()  # Flush screen output
 
@@ -381,7 +398,6 @@ def main(args=None):
 	finally:
 		# Destroy the node explicitly
 		# (optional - Done automatically when node is garbage collected)
-		node.destroy_node()
 		rclpy.shutdown() 
 
 

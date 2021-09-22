@@ -8,13 +8,11 @@ from evdev import InputDevice, ecodes
 import json
 import os
 import threading
-import shutil
-import time
 import sys
-import math
 
 ##### Interfaces
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
+
 from std_msgs.msg import Header
 from std_srvs.srv import Empty, Trigger
 
@@ -183,10 +181,8 @@ class ControllerNode(Node):
         if not self.end:
             for key in self.actual_axis.keys():
                 msg = AxisCmd()
-                now = time.time()
                 msg.header = Header()
-                msg.header.stamp.sec = int(now)
-                msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
+                msg.header.stamp = self.get_clock().now().to_msg()
                 msg.header.frame_id = "Axis_" +  str(self.axis_dict[key][0]) + "_Cmd"
                 msg.axis_cmd = self.actual_axis[key]
                 msg.min_value = self.axis_dict[key][1][0]
@@ -198,10 +194,8 @@ class ControllerNode(Node):
         if not self.end:
             for key in self.actual_button.keys():
                 msg = ButtonCmd()
-                now = time.time()
                 msg.header = Header()
-                msg.header.stamp.sec = int(now)
-                msg.header.stamp.nanosec = int(now* 1e9) % 1000000000
+                msg.header.stamp = self.get_clock().now().to_msg()
                 msg.header.frame_id = "Button_" +  str(self.button_dict[key][0]) + "_Cmd"
                 msg.button_cmd = self.actual_button[key]
                 self.button_publishers[key].publish(msg)
@@ -226,7 +220,6 @@ def main(args=None):
     finally:
         # Destroy the node explicitly
         # (optional - Done automatically when node is garbage collected)
-        node.destroy_node()
         rclpy.shutdown() 
 
 
