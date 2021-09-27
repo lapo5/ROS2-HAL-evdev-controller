@@ -19,6 +19,10 @@ for device in devices:
 	if device.name == "Sony Computer Entertainment Wireless Controller" or device.name == "Wireless Controller":
 		print("Found PS4 Joystick on path: {0}".format(device.path))
 		event = device.path.split('/')[-1]
+		
+	if device.name == "Microsoft SideWinder Precision 2 Joystick":
+		print("Found Microsoft Joystick on path: {0}".format(device.path))
+		event = device.path.split('/')[-1]
 
 dev_address = DEV_ADDR + str(event)
 

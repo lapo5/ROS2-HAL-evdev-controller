@@ -61,7 +61,7 @@ class ControllerNode(Node):
                     self.controller_name = "ps4_joystick"
                     self.found = True
 
-                if device.name == "CONTROLLER XARM":
+                if device.name == "Microsoft SideWinder Precision 2 Joystick":
                     print("Found Joystick Slide Winder on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "slide_winder"
@@ -154,6 +154,7 @@ class ControllerNode(Node):
         if self.is_axis:
             self.actual_axis = self.axis_dict.copy()
             for key in self.axis_dict.keys():
+                print(self.actual_axis[key], self.axis_dict[key])
                 self.actual_axis[key] = self.axis_dict[key][1][2]
 
         # Initialize button cmd at 0

@@ -58,29 +58,29 @@ class CalibrateControllerNode(Node):
 		self.actual_button = dict()
 		self.actual_axis = dict()
 
-        self.found = False
+		self.found = False
 
 		if self.event == "discovery_event":
 			
-            devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-            for device in devices:
-                if device.name == "Mad Catz Saitek Side Panel Control Deck":
-                    print("Found LogitechPanel on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "logitech_panel"
-                    self.found = True
+			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+			for device in devices:
+				if device.name == "Mad Catz Saitek Side Panel Control Deck":
+					print("Found LogitechPanel on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = "logitech_panel"
+					self.found = True
 
-                if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
-                    print("Found PS4 Joystick on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "ps4_joystick"
-                    self.found = True
+				if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
+					print("Found PS4 Joystick on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = "ps4_joystick"
+					self.found = True
 
-                if device.name == "CONTROLLER XARM":
-                    print("Found Joystick Slide Winder on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "slide_winder"
-                    self.found = True
+				if device.name == "Microsoft SideWinder Precision 2 Joystick":
+					print("Found Joystick Slide Winder on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = "slide_winder"
+					self.found = True
 
 
 		sys.stdout.flush()  # Flush screen output
@@ -356,7 +356,7 @@ class CalibrateControllerNode(Node):
 		if input("Do you want to save this calibration? [y/else]:\t") == "y":
 
 			# If an axes calibration is available, store it in axes_calib.json
-			PRINT(self.resources_path)
+			print(self.resources_path)
 			if os.path.exists(self.resources_path):
 				shutil.rmtree(self.resources_path)
 			os.mkdir(self.resources_path)
