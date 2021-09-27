@@ -29,7 +29,6 @@ find_package(std_msgs REQUIRED)
 set(msg_files
 	"msgs/AxisCmd.msg"
 	"msgs/ButtonCmd.msg"
-	"msgs/Speed.msg"
    )
    
 set(srv_files
