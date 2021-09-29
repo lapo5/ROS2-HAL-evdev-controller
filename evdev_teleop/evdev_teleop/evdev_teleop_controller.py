@@ -38,12 +38,24 @@ class ControllerNode(Node):
         self.get_logger().info("Controller node is awake...")
 
         self.declare_parameter("event", "discovery_event")
+        self.event = self.get_parameter("event").value
+
         self.declare_parameter("controller_name", "discovery")
+        self.controller_name = self.get_parameter("controller_name").value
 
         self.found = False
 
-        self.controller_name = self.get_parameter("controller_name").value
-        self.event = self.get_parameter("event").value
+        self.declare_parameter("services.is_init", "/evdev_controller/is_init")
+        self.is_init_service = self.get_parameter("services.is_init").value
+
+        self.declare_parameter("services.stop", "/evdev_controller/stop")
+        self.stop_service = self.get_parameter("services.stop").value
+
+        self.declare_parameter("publishers.button_subset", "/teleop_cmd/button/")
+        self.button_topic = self.get_parameter("publishers.button_subset").value
+
+        self.declare_parameter("publishers.axis_subset", "/teleop_cmd/axis/")
+        self.axis_topic = self.get_parameter("publishers.axis_subset").value    
 
         if self.event == "discovery_event":
 
@@ -70,7 +82,7 @@ class ControllerNode(Node):
         sys.stdout.flush()  # Flush screen output
 
         # Service: stop acquisition
-        self.is_init_service = self.create_service(Trigger, "/evdev_controller/is_init", self.is_init)
+        self.is_init_service = self.create_service(Trigger, self.is_init_service, self.is_init)
         
         if self.found:
             self.dev_address = DEV_ADDR + str(self.event)
@@ -93,7 +105,7 @@ class ControllerNode(Node):
             self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
 
             # Service: stop acquisition
-            self.stop_service = self.create_service(Empty, "/evdev_controller/stop", self.stop)
+            self.stop_service = self.create_service(Empty, self.stop_service, self.stop)
 
             # Upload calibration data
             try:
@@ -115,13 +127,13 @@ class ControllerNode(Node):
                     self.button_publishers = dict()
                     for button in self.button_dict.keys():
                         name = self.button_dict[button][0]
-                        self.button_publishers[button] = self.create_publisher(ButtonCmd, "teleop_cmd/button/"+name, 10)
+                        self.button_publishers[button] = self.create_publisher(ButtonCmd, self.button_topic+name, 10)
 
                 if self.is_axis:
                     self.axis_publishers = dict()
                     for axis in self.axis_dict.keys():
                         name = self.axis_dict[axis][0]
-                        self.axis_publishers[axis] = self.create_publisher(AxisCmd, "teleop_cmd/axis/"+name, 10)
+                        self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 10)
                 
                 # Start of the commands update thread
                 self.initialize_cmds()
