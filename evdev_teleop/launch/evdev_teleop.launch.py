@@ -18,7 +18,7 @@ def generate_launch_description():
             package='evdev_teleop',
             namespace='controller',
             executable='controller',
-            name='controller'
+            name='controller',
             output={
                     "stdout": "screen",
                     "stderr": "screen",
