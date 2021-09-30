@@ -21,11 +21,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ale_scar',
-    maintainer_email='ale_scar@todo.todo',
-    description='TODO: Package description',
-    license='TODO: License declaration',
-    tests_require=['pytest'],
+    maintainer='Marco Lapolla',
+    maintainer_email='marco.lapolla5@gmail.com',
+    description='HAL for EvDev Controller',
+    license='BSD',
     entry_points={
         'console_scripts': [
         "controller = evdev_teleop.evdev_teleop_controller:main",
