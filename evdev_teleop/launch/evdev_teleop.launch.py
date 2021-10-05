@@ -16,9 +16,8 @@ def generate_launch_description():
         
         Node(
             package='evdev_teleop',
-            namespace='controller',
-            executable='controller',
-            name='controller',
+            executable='evdev_teleop_controller',
+            name='evdev_teleop_controller',
             output={
                     "stdout": "screen",
                     "stderr": "screen",

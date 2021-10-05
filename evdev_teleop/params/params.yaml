@@ -1,4 +1,4 @@
-evdev_controller_node:
+evdev_teleop_controller:
   ros__parameters:
 
     event: discovery_event   # Evdev path

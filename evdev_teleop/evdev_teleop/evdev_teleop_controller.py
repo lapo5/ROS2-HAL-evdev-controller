@@ -33,7 +33,7 @@ DEV_ADDR = "/dev/input/"
 ##### Controller class definition
 class ControllerNode(Node):
     def __init__(self):
-        super().__init__("evdev_controller_node")
+        super().__init__("evdev_teleop_controller")
 
         self.get_logger().info("Controller node is awake...")
 
