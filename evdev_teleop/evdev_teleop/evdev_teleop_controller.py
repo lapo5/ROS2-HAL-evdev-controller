@@ -127,13 +127,13 @@ class ControllerNode(Node):
                     self.button_publishers = dict()
                     for button in self.button_dict.keys():
                         name = self.button_dict[button][0]
-                        self.button_publishers[button] = self.create_publisher(ButtonCmd, self.button_topic+name, 10)
+                        self.button_publishers[button] = self.create_publisher(ButtonCmd, self.button_topic+name, 1)
 
                 if self.is_axis:
                     self.axis_publishers = dict()
                     for axis in self.axis_dict.keys():
                         name = self.axis_dict[axis][0]
-                        self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 10)
+                        self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 1)
                 
                 # Start of the commands update thread
                 self.initialize_cmds()
