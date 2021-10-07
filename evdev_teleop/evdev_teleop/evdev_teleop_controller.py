@@ -100,7 +100,6 @@ class ControllerNode(Node):
             self.actual_axis = dict()
 
             self.resources_path = PATH + self.controller_name + "/"
-            print(self.resources_path)
 
             self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
 
@@ -166,7 +165,6 @@ class ControllerNode(Node):
         if self.is_axis:
             self.actual_axis = self.axis_dict.copy()
             for key in self.axis_dict.keys():
-                print(self.actual_axis[key], self.axis_dict[key])
                 self.actual_axis[key] = self.axis_dict[key][1][2]
 
         # Initialize button cmd at 0
