@@ -37,6 +37,9 @@ class ControllerNode(Node):
 
         self.get_logger().info("Controller node is awake...")
 
+        self.declare_parameter("hz", "50.0")
+        self.rate = float(self.get_parameter("hz").value)
+
         self.declare_parameter("event", "discovery_event")
         self.event = self.get_parameter("event").value
 
@@ -139,8 +142,7 @@ class ControllerNode(Node):
                 self.thread1.start()
 
                 # Timers for both axis and buttons publishers
-                self.axis_timer = self.create_timer(0.02, self.publish_axis) #50 Hz
-                self.button_timer = self.create_timer(0.05, self.publish_button) #20 Hz
+                self.axis_timer = self.create_timer(1.0/self.rate, self.publish_commands) #50 Hz
         else:
             self.get_logger().info("No EvDev Controller found, check connection!")
 
@@ -188,7 +190,7 @@ class ControllerNode(Node):
                     continue
 
 
-    def publish_axis(self):
+    def publish_commands(self):
         if not self.end:
             for key in self.actual_axis.keys():
                 msg = AxisCmd()
@@ -200,9 +202,7 @@ class ControllerNode(Node):
                 msg.max_value = self.axis_dict[key][1][1]
                 msg.steady_value = self.axis_dict[key][1][2]
                 self.axis_publishers[key].publish(msg)
-
-    def publish_button(self):
-        if not self.end:
+                
             for key in self.actual_button.keys():
                 msg = ButtonCmd()
                 msg.header = Header()
