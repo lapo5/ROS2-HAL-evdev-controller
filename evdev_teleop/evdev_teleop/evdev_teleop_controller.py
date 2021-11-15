@@ -35,8 +35,6 @@ class ControllerNode(Node):
     def __init__(self):
         super().__init__("evdev_teleop_controller")
 
-        self.get_logger().info("Controller node is awake...")
-
         self.declare_parameter("hz", "50.0")
         self.rate = float(self.get_parameter("hz").value)
 
@@ -143,8 +141,9 @@ class ControllerNode(Node):
 
                 # Timers for both axis and buttons publishers
                 self.axis_timer = self.create_timer(1.0/self.rate, self.publish_commands) #50 Hz
+                self.get_logger().info("[EvDev Controller] Node Ready!")
         else:
-            self.get_logger().info("No EvDev Controller found, check connection!")
+            self.get_logger().info("[EvDev Controller] No EvDev Controller found, check connection!")
 
     # This function stops/enable the acquisition stream
     def stop(self, request, response):
@@ -223,10 +222,10 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        print('Node EvDev Controller stopped cleanly')
+        node.get_logger().info('[EvDev Controller] Node stopped cleanly')
         node.exit()
     except BaseException:
-        print('exception in Node EvDev Controller:', file=sys.stderr)
+        node.get_logger().info('[EvDev Controller] Exception:', file=sys.stderr)
         raise
     finally:
         # Destroy the node explicitly
