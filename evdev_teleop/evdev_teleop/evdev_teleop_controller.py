@@ -6,7 +6,6 @@ from rclpy.node import Node
 import evdev
 from evdev import InputDevice, ecodes
 import json
-import os
 import threading
 import sys
 
