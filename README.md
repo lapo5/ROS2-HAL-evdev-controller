@@ -25,4 +25,5 @@ Node to calibrate the evdev controller.
 
 ## Depend
 
-ROS2
+- ROS2
+  EvDev
