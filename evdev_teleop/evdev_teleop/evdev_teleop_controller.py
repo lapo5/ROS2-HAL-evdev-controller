@@ -32,7 +32,7 @@ DEV_ADDR = "/dev/input/"
 ##### Controller class definition
 class ControllerNode(Node):
     def __init__(self):
-        super().__init__("evdev_teleop_controller")
+        super().__init__("evdev_controller")
 
         self.declare_parameter("hz", "50.0")
         self.rate = float(self.get_parameter("hz").value)
@@ -118,7 +118,7 @@ class ControllerNode(Node):
 
             except:
                 self.error = True
-                print("Calibrate Controller First!")
+                print("Calibrate Controller {0} First!".format(self.controller_name))
 
             if not self.error:
                 # Definition of the publisher functions
@@ -144,7 +144,7 @@ class ControllerNode(Node):
         else:
             self.get_logger().info("[EvDev Controller] No EvDev Controller found, check connection!")
 
-    # This function stops/enable the acquisition stream
+
     def stop(self, request, response):
         self.end = True
 
@@ -159,7 +159,6 @@ class ControllerNode(Node):
         return response
 
 
-    ### This function remaps the axis and buttons and sets their initial value
     def initialize_cmds(self):
         # Initialize axis cmd at the middle value of their excursion
         if self.is_axis:
@@ -174,8 +173,6 @@ class ControllerNode(Node):
                 self.actual_button[key] = 0
 
 
-
-    ### This function update the axis/button cmds in a background thread
     def update_cmds(self):
         while not self.error and not self.end:
             device = InputDevice(self.dev_address)
@@ -209,6 +206,7 @@ class ControllerNode(Node):
                 msg.button_cmd = self.actual_button[key]
                 self.button_publishers[key].publish(msg)
 
+
     def exit(self):
         self.end = True
         
@@ -227,8 +225,6 @@ def main(args=None):
         node.get_logger().info('[EvDev Controller] Exception:', file=sys.stderr)
         raise
     finally:
-        # Destroy the node explicitly
-        # (optional - Done automatically when node is garbage collected)
         rclpy.shutdown() 
 
 

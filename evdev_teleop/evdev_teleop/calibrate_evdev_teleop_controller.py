@@ -21,23 +21,18 @@ from teleop_interfaces.msg import AxisCmd, ButtonCmd
 from ament_index_python.packages import get_package_share_directory
 
 package_share_directory = get_package_share_directory('evdev_teleop')
-# Path to store the calibration file
+
 PATH = package_share_directory + "/conf/"
 
 CALIB_AXES = "axes_calib.json"
 CALIB_BUTTONS = "buttons_calib.json"
 
-##### Path to the event log
 DEV_ADDR = "/dev/input/"
 
 
-
-##### Controller class definition
 class CalibrateControllerNode(Node):
 	def __init__(self):
-		super().__init__("calibrate_evdev_controller_node")
-
-		self.get_logger().info("Controller node is awake...")
+		super().__init__("calibrate_evdev_controller")
 
 		self.declare_parameter("event", "discovery_event")
 		self.declare_parameter("controller_name", "None")
@@ -82,7 +77,6 @@ class CalibrateControllerNode(Node):
 					self.controller_name = "slide_winder"
 					self.found = True
 
-
 		sys.stdout.flush()  # Flush screen output
 
 		self.dev_address = DEV_ADDR + str(self.event)
@@ -91,7 +85,6 @@ class CalibrateControllerNode(Node):
 		print(self.resources_path)
 
 		# Upload calibration data
-		# Axes/buttons calibration if required
 		while not self.stop_calib:
 			key = input("Calibrate the axes? [y/else]:\t")
 			
@@ -115,11 +108,11 @@ class CalibrateControllerNode(Node):
 			if self.stop_calib:
 				break
 
-	### This function defines a dictionary with command name and range of values
+
 	def calibrate_controller_axes(self, size_th):
 
 		# Initialization of some variables
-		key = None;
+		key = None
 		cmd_candidates = dict()
 		cmd_dict = dict()
 
@@ -152,8 +145,6 @@ class CalibrateControllerNode(Node):
 
 					if ret:
 						print("cmd_code: {0}".format(cmd_code))
-
-				
 						break
 
 			input("Press Enter and Move Axis to Minimum and Maximum")
@@ -163,7 +154,6 @@ class CalibrateControllerNode(Node):
 				# Discard the syncronization event
 				if event.type != ecodes.SYN_REPORT and event.code != 4:
 
-					
 					# Save the event value in a list
 					if event.code == cmd_code:
 						values.append(event.value)
@@ -176,8 +166,6 @@ class CalibrateControllerNode(Node):
 						print(maximum_value)		
 						break
 
-
-			
 			steady_value = input("Enter Steady Value the Axis")
 
 			try:
@@ -190,7 +178,6 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-
 		print(cmd_dict)
 		return cmd_dict
 
@@ -198,7 +185,7 @@ class CalibrateControllerNode(Node):
 	def calibrate_controller_buttons(self, size_th):
 
 		# Initialization of some variables
-		key = None;
+		key = None
 		cmd_candidates = dict()
 		cmd_dict = dict()
 
@@ -210,7 +197,6 @@ class CalibrateControllerNode(Node):
 				break
 
 			# Iterate all the registered events
-			
 			input("Press Enter and Start Moving Button")
 
 			device = InputDevice(self.dev_address)
@@ -231,8 +217,6 @@ class CalibrateControllerNode(Node):
 
 					if ret:
 						print("cmd_code: {0}".format(cmd_code))
-
-				
 						break
 
 			input("Press Enter and Move Button Again")
@@ -260,7 +244,6 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-
 		print(cmd_dict)
 		return cmd_dict
 
@@ -287,10 +270,7 @@ class CalibrateControllerNode(Node):
 		return is_enough, cmd_code
 	
 
-	### This function check the subject command to be stored
 	def check_minmax_cmd(self, candidates,lim_size):
-
-		best_candidate_len = 0
 		is_enough = False
 		minumum = None
 		maximum = None
@@ -304,10 +284,9 @@ class CalibrateControllerNode(Node):
 
 		return is_enough, minumum, maximum
 	
-	### This function check the subject command to be stored
+	
 	def check_steady_value_cmd(self, candidates,lim_size):
 
-		best_candidate_len = 0
 		is_enough = False
 		steady_value = None
 
@@ -320,10 +299,8 @@ class CalibrateControllerNode(Node):
 		return is_enough, steady_value
 	
 
-	### This function check the subject command to be stored
 	def check_maximum_cmd(self, candidates,lim_size):
 
-		best_candidate_len = 0
 		is_enough = False
 		maximum = None
 
@@ -336,7 +313,6 @@ class CalibrateControllerNode(Node):
 		return is_enough, maximum
 	
 
-	### This function shows the final list of commands
 	def show_calib_result(self, is_axis, is_button):
 
 		# Show the axes legend
@@ -350,7 +326,6 @@ class CalibrateControllerNode(Node):
 			print("\n\n ========== BUTTONS CMD LEGEND =========\n")
 			for button in self.button_dict.keys():
 				print(f"Name: {self.button_dict[button][0]}\tCode: {button}\tRange: {self.button_dict[button][1]}\n")
-
 
 		# If calibration is successful, let the user store it as a JSON file
 		if input("Do you want to save this calibration? [y/else]:\t") == "y":
@@ -383,7 +358,7 @@ class CalibrateControllerNode(Node):
 
 		
 
-##### Main function to loop
+
 def main(args=None):
 	rclpy.init(args=args)
 	node = CalibrateControllerNode()
@@ -396,8 +371,6 @@ def main(args=None):
 		print('Exception in Node EvDev Calibration:', file=sys.stderr)
 		raise
 	finally:
-		# Destroy the node explicitly
-		# (optional - Done automatically when node is garbage collected)
 		rclpy.shutdown() 
 
 
