@@ -151,7 +151,6 @@ class ControllerNode(Node):
         return response
 
 
-    # This function stops/enable the acquisition stream
     def is_init(self, request, response):
         
         response.success = self.found
