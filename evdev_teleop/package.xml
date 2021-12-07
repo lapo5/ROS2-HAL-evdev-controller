@@ -8,12 +8,9 @@
   <license>BSD</license>
 
   <depend>rclpy</depend>
-  <depend>evdev</depend>
   <depend>teleop_interfaces</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-  <depend>os</depend>
-  <depend>threading</depend>
 
   <export>
     <build_type>ament_python</build_type>

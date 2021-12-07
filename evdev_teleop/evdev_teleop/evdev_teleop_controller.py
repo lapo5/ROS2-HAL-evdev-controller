@@ -101,11 +101,6 @@ class ControllerNode(Node):
 
             self.resources_path = PATH + self.controller_name + "/"
 
-            self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
-
-            # Service: stop acquisition
-            self.stop_service = self.create_service(Empty, self.stop_service, self.stop)
-
             # Upload calibration data
             try:
                 with open(self.resources_path+CALIB_AXES, "r") as readfile:
@@ -134,6 +129,11 @@ class ControllerNode(Node):
                         name = self.axis_dict[axis][0]
                         self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 1)
                 
+
+                self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
+                
+                self.stop_service = self.create_service(Empty, self.stop_service, self.stop)
+
                 # Start of the commands update thread
                 self.initialize_cmds()
                 self.thread1.start()

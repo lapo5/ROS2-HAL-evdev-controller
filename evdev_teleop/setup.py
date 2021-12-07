@@ -28,7 +28,7 @@ setup(
     entry_points={
         'console_scripts': [
         "evdev_teleop_controller = evdev_teleop.evdev_teleop_controller:main",
-        "calibrate_controller = evdev_teleop.calibrate_evdev_teleop_controller:main",
+        "calibrate_controller = evdev_teleop.calibrate_controller:main",
         ],
     },
 )

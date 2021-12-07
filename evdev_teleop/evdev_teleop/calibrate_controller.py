@@ -32,7 +32,7 @@ DEV_ADDR = "/dev/input/"
 
 class CalibrateControllerNode(Node):
 	def __init__(self):
-		super().__init__("calibrate_evdev_controller")
+		super().__init__("calibrate_controller")
 
 		self.declare_parameter("event", "discovery_event")
 		self.declare_parameter("controller_name", "None")
