@@ -62,19 +62,19 @@ class ControllerNode(Node):
             devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
             for device in devices:
                 if device.name == "Mad Catz Saitek Side Panel Control Deck":
-                    print("Found LogitechPanel on path: {0}".format(device.path))
+                    self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "logitech_panel"
                     self.found = True
 
                 if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
-                    print("Found PS4 Joystick on path: {0}".format(device.path))
+                    self.get_logger().info("Found PS4 Joystick on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "ps4_joystick"
                     self.found = True
 
                 if device.name == "Microsoft SideWinder Precision 2 Joystick":
-                    print("Found Joystick Slide Winder on path: {0}".format(device.path))
+                    self.get_logger().info("Found Joystick Slide Winder on path: {0}".format(device.path))
                     self.event = device.path.split('/')[-1]
                     self.controller_name = "slide_winder"
                     self.found = True
@@ -113,7 +113,7 @@ class ControllerNode(Node):
 
             except:
                 self.error = True
-                print("Calibrate Controller {0} First!".format(self.controller_name))
+                self.get_logger().info("Calibrate Controller {0} First!".format(self.controller_name))
 
             if not self.error:
                 # Definition of the publisher functions

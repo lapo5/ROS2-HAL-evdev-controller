@@ -60,19 +60,19 @@ class CalibrateControllerNode(Node):
 			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 			for device in devices:
 				if device.name == "Mad Catz Saitek Side Panel Control Deck":
-					print("Found LogitechPanel on path: {0}".format(device.path))
+					self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "logitech_panel"
 					self.found = True
 
 				if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
-					print("Found PS4 Joystick on path: {0}".format(device.path))
+					self.get_logger().info("Found PS4 Joystick on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "ps4_joystick"
 					self.found = True
 
 				if device.name == "Microsoft SideWinder Precision 2 Joystick":
-					print("Found Joystick Slide Winder on path: {0}".format(device.path))
+					self.get_logger().info("Found Joystick Slide Winder on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "slide_winder"
 					self.found = True
@@ -82,7 +82,7 @@ class CalibrateControllerNode(Node):
 		self.dev_address = DEV_ADDR + str(self.event)
 
 		self.resources_path = PATH + self.controller_name + "/"
-		print(self.resources_path)
+		self.get_logger().info(self.resources_path)
 
 		# Upload calibration data
 		while not self.stop_calib:
@@ -90,7 +90,7 @@ class CalibrateControllerNode(Node):
 			
 			# Fast check after input
 			if key == "Y" or key == 'y':
-				print("Calibration of the axes started...")
+				self.get_logger().info("Calibration of the axes started...")
 				self.axis_dict = self.calibrate_controller_axes(300)
 				self.get_logger().info("Calibration is over...")
 				self.is_axis = True
@@ -99,7 +99,7 @@ class CalibrateControllerNode(Node):
 			
 			# Fast check after input
 			if key == "Y" or key == 'y':
-				print("Calibration of the buttons started...")
+				self.get_logger().info("Calibration of the buttons started...")
 				self.button_dict = self.calibrate_controller_buttons(10)
 				self.get_logger().info("Calibration is over...")
 				self.is_button = True
@@ -144,7 +144,7 @@ class CalibrateControllerNode(Node):
 					ret, cmd_code = self.check_subject_cmd(cmd_candidates, size_th)
 
 					if ret:
-						print("cmd_code: {0}".format(cmd_code))
+						self.get_logger().info("cmd_code: {0}".format(cmd_code))
 						break
 
 			input("Press Enter and Move Axis to Minimum and Maximum")
@@ -162,8 +162,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						print(minimum_value)	
-						print(maximum_value)		
+						self.get_logger().info(minimum_value)	
+						self.get_logger().info(maximum_value)		
 						break
 
 			steady_value = input("Enter Steady Value the Axis")
@@ -178,7 +178,7 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		print(cmd_dict)
+		self.get_logger().info(cmd_dict)
 		return cmd_dict
 
 	### This function defines a dictionary with command name and range of values
@@ -216,7 +216,7 @@ class CalibrateControllerNode(Node):
 					ret, cmd_code = self.check_subject_cmd(cmd_candidates, size_th)
 
 					if ret:
-						print("cmd_code: {0}".format(cmd_code))
+						self.get_logger().info("cmd_code: {0}".format(cmd_code))
 						break
 
 			input("Press Enter and Move Button Again")
@@ -235,8 +235,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						print(minimum_value)	
-						print(maximum_value)		
+						self.get_logger().info(minimum_value)	
+						self.get_logger().info(maximum_value)		
 						break
 
 			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value]]
@@ -244,7 +244,7 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		print(cmd_dict)
+		self.get_logger().info(cmd_dict)
 		return cmd_dict
 
 
@@ -317,21 +317,21 @@ class CalibrateControllerNode(Node):
 
 		# Show the axes legend
 		if is_axis:
-			print("\n\n =========== AXIS CMD LEGEND ==========\n")
+			self.get_logger().info("\n\n =========== AXIS CMD LEGEND ==========\n")
 			for axis in self.axis_dict.keys():
-				print(f"Name: {self.axis_dict[axis][0]}\tCode: {axis}\tRange: {self.axis_dict[axis][1]}\n")
+				self.get_logger().info(f"Name: {self.axis_dict[axis][0]}\tCode: {axis}\tRange: {self.axis_dict[axis][1]}\n")
 
 		# Show the buttons legend
 		if is_button:
-			print("\n\n ========== BUTTONS CMD LEGEND =========\n")
+			self.get_logger().info("\n\n ========== BUTTONS CMD LEGEND =========\n")
 			for button in self.button_dict.keys():
-				print(f"Name: {self.button_dict[button][0]}\tCode: {button}\tRange: {self.button_dict[button][1]}\n")
+				self.get_logger().info(f"Name: {self.button_dict[button][0]}\tCode: {button}\tRange: {self.button_dict[button][1]}\n")
 
 		# If calibration is successful, let the user store it as a JSON file
 		if input("Do you want to save this calibration? [y/else]:\t") == "y":
 
 			# If an axes calibration is available, store it in axes_calib.json
-			print(self.resources_path)
+			self.get_logger().info(self.resources_path)
 			if os.path.exists(self.resources_path):
 				shutil.rmtree(self.resources_path)
 			os.mkdir(self.resources_path)
@@ -348,12 +348,12 @@ class CalibrateControllerNode(Node):
 				with open(self.resources_path+CALIB_BUTTONS, "w+") as outfile:
 					json.dump(self.button_dict, outfile)
 
-			print("Calibration data have been saved successfully.")
+			self.get_logger().info("Calibration data have been saved successfully.")
 			return True
 
 		else:
 
-			print("Calibration data have been rejected. Try again.")
+			self.get_logger().info("Calibration data have been rejected. Try again.")
 			return False
 
 		
@@ -366,9 +366,9 @@ def main(args=None):
 	try:
 		rclpy.spin(node)
 	except KeyboardInterrupt:
-		print('EvDev Calibration Node stopped cleanly')
+		node.get_logger().info('[EvDev Calibration] Node Stopped Cleanly')
 	except BaseException:
-		print('Exception in Node EvDev Calibration:', file=sys.stderr)
+		node.get_logger().info('[EvDev Calibration] Exception:', file=sys.stderr)
 		raise
 	finally:
 		rclpy.shutdown() 
