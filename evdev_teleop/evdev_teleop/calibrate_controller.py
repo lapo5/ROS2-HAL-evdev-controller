@@ -162,8 +162,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						self.get_logger().info(minimum_value)	
-						self.get_logger().info(maximum_value)		
+						self.get_logger().info("Min Value: {0}".format(minimum_value))
+						self.get_logger().info("Max Value: {0}".format(maximum_value))
 						break
 
 			steady_value = input("Enter Steady Value the Axis")
@@ -178,7 +178,7 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		self.get_logger().info(cmd_dict)
+		self.get_logger().info("cmd_dict: {0}".format(cmd_dict))
 		return cmd_dict
 
 	### This function defines a dictionary with command name and range of values
@@ -235,8 +235,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						self.get_logger().info(minimum_value)	
-						self.get_logger().info(maximum_value)		
+						self.get_logger().info("Min Value: {0}".format(minimum_value))
+						self.get_logger().info("Max Value: {0}".format(maximum_value))	
 						break
 
 			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value]]
@@ -244,7 +244,7 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		self.get_logger().info(cmd_dict)
+		self.get_logger().info("cmd_dict: {0}".format(cmd_dict))
 		return cmd_dict
 
 
