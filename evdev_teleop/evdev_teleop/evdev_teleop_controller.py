@@ -13,6 +13,8 @@ import sys
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
 from std_msgs.msg import Header
+
+from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty, Trigger
 
 from ament_index_python.packages import get_package_share_directory
@@ -128,8 +130,13 @@ class ControllerNode(Node):
                     for axis in self.axis_dict.keys():
                         name = self.axis_dict[axis][0]
                         self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 1)
-                
 
+
+
+                self.declare_parameter("publishers.heartbeat", "/evdev_controller/heartbeat")
+                self.heartbeat_topic_name = self.get_parameter("publishers.heartbeat").value
+                self.heartbeat_publisher = self.create_publisher(EmptyMsg, self.heartbeat_topic_name, 1)
+                
                 self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
                 
                 self.stop_service = self.create_service(Empty, self.stop_service, self.stop)
@@ -175,13 +182,18 @@ class ControllerNode(Node):
     def update_cmds(self):
         while not self.error and not self.end:
             device = InputDevice(self.dev_address)
-            for event in device.read_loop():
-                if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT) and (event.type != 4):
-                    self.actual_axis[str(event.code)] = event.value 
-                elif self.is_button and str(event.code) in self.button_dict.keys():
-                    self.actual_button[str(event.code)] = event.value
-                else:
-                    continue
+
+            try:
+                for event in device.read_loop():
+                    if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT) and (event.type != 4):
+                        self.actual_axis[str(event.code)] = event.value 
+                    elif self.is_button and str(event.code) in self.button_dict.keys():
+                        self.actual_button[str(event.code)] = event.value
+                    else:
+                        continue
+            except:
+                print("Device Disconnected!")
+                self.exit()
 
 
     def publish_commands(self):
@@ -204,6 +216,9 @@ class ControllerNode(Node):
                 msg.header.frame_id = "Button_" +  str(self.button_dict[key][0]) + "_Cmd"
                 msg.button_cmd = self.actual_button[key]
                 self.button_publishers[key].publish(msg)
+
+            heartbeat_msg = EmptyMsg()
+            self.heartbeat_publisher.publish(heartbeat_msg)
 
 
     def exit(self):
