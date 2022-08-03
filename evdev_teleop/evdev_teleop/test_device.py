@@ -24,6 +24,10 @@ for device in devices:
 		print("Found Microsoft Joystick on path: {0}".format(device.path))
 		event = device.path.split('/')[-1]
 
+	if device.name == "Logitech Logitech Cordless RumblePad 2":
+		print("Found Logitech Wireless Joystick on path: {0}".format(device.path))
+		event = device.path.split('/')[-1]
+
 dev_address = DEV_ADDR + str(event)
 
 while True:

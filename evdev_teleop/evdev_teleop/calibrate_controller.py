@@ -77,6 +77,13 @@ class CalibrateControllerNode(Node):
 					self.controller_name = "slide_winder"
 					self.found = True
 
+
+				if device.name == "Logitech Logitech Cordless RumblePad 2":
+					self.get_logger().info("Found Logitech Wireless Joystick on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = "logitech_wireless"
+					self.found = True
+
 		sys.stdout.flush()  # Flush screen output
 
 		self.dev_address = DEV_ADDR + str(self.event)
@@ -166,7 +173,7 @@ class CalibrateControllerNode(Node):
 						self.get_logger().info("Max Value: {0}".format(maximum_value))
 						break
 
-			steady_value = input("Enter Steady Value the Axis")
+			steady_value = input("Enter Steady Value the Axis:\t")
 
 			try:
 				steady_value = int(steady_value)
