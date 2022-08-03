@@ -13,6 +13,8 @@ import sys
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
 from std_msgs.msg import Header
+
+from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty, Trigger
 
 from ament_index_python.packages import get_package_share_directory
@@ -58,26 +60,7 @@ class ControllerNode(Node):
         self.axis_topic = self.get_parameter("publishers.axis_subset").value    
 
         if self.event == "discovery_event":
-
-            devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-            for device in devices:
-                if device.name == "Mad Catz Saitek Side Panel Control Deck":
-                    self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "logitech_panel"
-                    self.found = True
-
-                if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
-                    self.get_logger().info("Found PS4 Joystick on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "ps4_joystick"
-                    self.found = True
-
-                if device.name == "Microsoft SideWinder Precision 2 Joystick":
-                    self.get_logger().info("Found Joystick Slide Winder on path: {0}".format(device.path))
-                    self.event = device.path.split('/')[-1]
-                    self.controller_name = "slide_winder"
-                    self.found = True
+            self.discovery_device()
 
         sys.stdout.flush()  # Flush screen output
 
@@ -88,6 +71,7 @@ class ControllerNode(Node):
             self.dev_address = DEV_ADDR + str(self.event)
 
             self.error = False
+            self.evdev_controller_connected = True
             self.end = False
 
             self.is_axis = False
@@ -128,8 +112,13 @@ class ControllerNode(Node):
                     for axis in self.axis_dict.keys():
                         name = self.axis_dict[axis][0]
                         self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 1)
-                
 
+
+
+                self.declare_parameter("publishers.heartbeat", "/evdev_controller/heartbeat")
+                self.heartbeat_topic_name = self.get_parameter("publishers.heartbeat").value
+                self.heartbeat_publisher = self.create_publisher(EmptyMsg, self.heartbeat_topic_name, 1)
+                
                 self.thread1 = threading.Thread(target=self.update_cmds, daemon=True)
                 
                 self.stop_service = self.create_service(Empty, self.stop_service, self.stop)
@@ -143,6 +132,28 @@ class ControllerNode(Node):
                 self.get_logger().info("[EvDev Controller] Node Ready!")
         else:
             self.get_logger().info("[EvDev Controller] No EvDev Controller found, check connection!")
+
+
+    def discovery_device(self):
+        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+        for device in devices:
+            if device.name == "Mad Catz Saitek Side Panel Control Deck":
+                self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
+                self.event = device.path.split('/')[-1]
+                self.controller_name = "logitech_panel"
+                self.found = True
+
+            if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
+                self.get_logger().info("Found PS4 Joystick on path: {0}".format(device.path))
+                self.event = device.path.split('/')[-1]
+                self.controller_name = "ps4_joystick"
+                self.found = True
+
+            if device.name == "Microsoft SideWinder Precision 2 Joystick":
+                self.get_logger().info("Found Joystick Slide Winder on path: {0}".format(device.path))
+                self.event = device.path.split('/')[-1]
+                self.controller_name = "slide_winder"
+                self.found = True
 
 
     def stop(self, request, response):
@@ -173,19 +184,33 @@ class ControllerNode(Node):
 
 
     def update_cmds(self):
-        while not self.error and not self.end:
-            device = InputDevice(self.dev_address)
-            for event in device.read_loop():
-                if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT) and (event.type != 4):
-                    self.actual_axis[str(event.code)] = event.value 
-                elif self.is_button and str(event.code) in self.button_dict.keys():
-                    self.actual_button[str(event.code)] = event.value
-                else:
-                    continue
+        while(True):
+            
+            while(not self.evdev_controller_connected):
+                self.found = False
+                self.discovery_device()
+                if self.found:
+                    self.evdev_controller_connected = True
+                    print("Device Re-Connected!")
+            
+            while not self.error and not self.end and self.evdev_controller_connected:
+                try:
+                    device = InputDevice(self.dev_address)
+
+                    for event in device.read_loop():
+                        if self.is_axis and (str(event.code) in self.axis_dict.keys()) and (event.type != ecodes.SYN_REPORT) and (event.type != 4):
+                            self.actual_axis[str(event.code)] = event.value 
+                        elif self.is_button and str(event.code) in self.button_dict.keys():
+                            self.actual_button[str(event.code)] = event.value
+                        else:
+                            continue
+                except:
+                    print("Device Disconnected!")
+                    self.evdev_controller_connected = False
 
 
     def publish_commands(self):
-        if not self.end:
+        if not self.end and self.evdev_controller_connected:
             for key in self.actual_axis.keys():
                 msg = AxisCmd()
                 msg.header = Header()
@@ -204,6 +229,9 @@ class ControllerNode(Node):
                 msg.header.frame_id = "Button_" +  str(self.button_dict[key][0]) + "_Cmd"
                 msg.button_cmd = self.actual_button[key]
                 self.button_publishers[key].publish(msg)
+
+            heartbeat_msg = EmptyMsg()
+            self.heartbeat_publisher.publish(heartbeat_msg)
 
 
     def exit(self):
