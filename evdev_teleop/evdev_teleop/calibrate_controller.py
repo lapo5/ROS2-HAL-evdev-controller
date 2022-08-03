@@ -55,10 +55,12 @@ class CalibrateControllerNode(Node):
 
 		self.found = False
 
+		print(self.event)
 		if self.event == "discovery_event":
 			
 			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 			for device in devices:
+				print(device.name)
 				if device.name == "Mad Catz Saitek Side Panel Control Deck":
 					self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
@@ -83,6 +85,13 @@ class CalibrateControllerNode(Node):
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "logitech_wireless"
 					self.found = True
+
+				if device.name == "Logitech Gamepad F710":
+					self.get_logger().info("Found Logitech Gamepad F710 on path: {0}".format(device.path))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = "logitech_gamepad"
+					self.found = True
+
 
 		sys.stdout.flush()  # Flush screen output
 
