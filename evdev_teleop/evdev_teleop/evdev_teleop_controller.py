@@ -155,6 +155,12 @@ class ControllerNode(Node):
                 self.controller_name = "slide_winder"
                 self.found = True
 
+            if device.name == "Logitech Logitech Cordless RumblePad 2":
+                self.get_logger().info("Found Logitech Wireless Joystick on path: {0}".format(device.path))
+                self.event = device.path.split('/')[-1]
+                self.controller_name = "logitech_wireless"
+                self.found = True
+
 
     def stop(self, request, response):
         self.end = True
