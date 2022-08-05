@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'evdev_teleop'
+package_name = 'hal_evdev_controller'
 
 setup(
     name=package_name,
@@ -27,8 +27,8 @@ setup(
     license='BSD',
     entry_points={
         'console_scripts': [
-        "evdev_teleop_controller = evdev_teleop.evdev_teleop_controller:main",
-        "calibrate_controller = evdev_teleop.calibrate_controller:main",
+        "evdev_controller = hal_evdev_controller.evdev_controller:main",
+        "calibrate_controller = hal_evdev_controller.calibrate_controller:main",
         ],
     },
 )

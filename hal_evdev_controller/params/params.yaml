@@ -1,9 +1,9 @@
-evdev_teleop_controller:
+evdev_controller:
   ros__parameters:
     hz: 50.0   # Rate
 
     event: discovery_event   # Evdev path
-    controller_name: slide_winder # Name of controller, if discovery ignored
+    controller_name: logitech_panel # Name of controller, if discovery ignored
 
     publishers:
       button_subset: /teleop_cmd/button/

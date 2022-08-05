@@ -15,13 +15,13 @@ def generate_launch_description():
     return LaunchDescription([
         
         Node(
-            package='evdev_teleop',
-            executable='evdev_teleop_controller',
-            name='evdev_teleop_controller',
+            package='hal_evdev_controller',
+            executable='evdev_controller',
+            name='evdev_controller',
             output={
                     "stdout": "screen",
                     "stderr": "screen",
             },
-            parameters=[os.path.join(get_package_share_directory("evdev_teleop"), 'params', 'params.yaml')],
+            parameters=[os.path.join(get_package_share_directory("hal_evdev_controller"), 'params', 'params.yaml')],
         )
 ])
