@@ -83,13 +83,13 @@ class CalibrateControllerNode(Node):
 				if device.name == "Logitech Logitech Cordless RumblePad 2":
 					self.get_logger().info("Found Logitech Wireless Joystick on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
-					self.controller_name = "logitech_wireless"
+					self.controller_name = "logitech_rumblepad"
 					self.found = True
 
 				if device.name == "Logitech Gamepad F710":
 					self.get_logger().info("Found Logitech Gamepad F710 on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
-					self.controller_name = "logitech_gamepad"
+					self.controller_name = "logitech_gamepad_f710"
 					self.found = True
 
 
@@ -344,7 +344,9 @@ class CalibrateControllerNode(Node):
 				self.get_logger().info(f"Name: {self.button_dict[button][0]}\tCode: {button}\tRange: {self.button_dict[button][1]}\n")
 
 		# If calibration is successful, let the user store it as a JSON file
-		if input("Do you want to save this calibration? [y/else]:\t") == "y":
+		key = input("Do you want to save this calibration? [y/else]:\t")
+
+		if key == "y" or key == "Y":
 
 			# If an axes calibration is available, store it in axes_calib.json
 			self.get_logger().info(self.resources_path)
@@ -369,7 +371,7 @@ class CalibrateControllerNode(Node):
 
 		else:
 
-			self.get_logger().info("Calibration data have been rejected. Try again.")
+			self.get_logger().info("Calibration data have been deleted. Try again.")
 			return False
 
 		

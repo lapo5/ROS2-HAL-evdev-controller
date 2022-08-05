@@ -85,6 +85,9 @@ class ControllerNode(Node):
 
             self.resources_path = PATH + self.controller_name + "/"
 
+            self.get_logger().info("Looking for Calibration of Controller {0}".format(self.controller_name))
+            self.get_logger().info("In folder {0}".format(self.resources_path))
+
             # Upload calibration data
             try:
                 with open(self.resources_path+CALIB_AXES, "r") as readfile:
@@ -158,8 +161,15 @@ class ControllerNode(Node):
             if device.name == "Logitech Logitech Cordless RumblePad 2":
                 self.get_logger().info("Found Logitech Wireless Joystick on path: {0}".format(device.path))
                 self.event = device.path.split('/')[-1]
-                self.controller_name = "logitech_wireless"
+                self.controller_name = "logitech_rumblepad"
                 self.found = True
+
+            if device.name == "Logitech Gamepad F710":
+                self.get_logger().info("Found Logitech Gamepad F710 on path: {0}".format(device.path))
+                self.event = device.path.split('/')[-1]
+                self.controller_name = "logitech_gamepad_f710"
+                self.found = True
+
 
 
     def stop(self, request, response):
