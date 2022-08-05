@@ -67,29 +67,36 @@ class CalibrateControllerNode(Node):
 					self.controller_name = "logitech_panel"
 					self.found = True
 
-				if device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
+				elif device.name == "Sony Computer Entertainment Wireless Controller"  or device.name == "Wireless Controller":
 					self.get_logger().info("Found PS4 Joystick on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "ps4_joystick"
 					self.found = True
 
-				if device.name == "Microsoft SideWinder Precision 2 Joystick":
+				elif device.name == "Microsoft SideWinder Precision 2 Joystick":
 					self.get_logger().info("Found Joystick Slide Winder on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "slide_winder"
 					self.found = True
 
 
-				if device.name == "Logitech Logitech Cordless RumblePad 2":
+				elif device.name == "Logitech Logitech Cordless RumblePad 2":
 					self.get_logger().info("Found Logitech Wireless Joystick on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "logitech_rumblepad"
 					self.found = True
 
-				if device.name == "Logitech Gamepad F710":
+				elif device.name == "Logitech Gamepad F710":
 					self.get_logger().info("Found Logitech Gamepad F710 on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
 					self.controller_name = "logitech_gamepad_f710"
+					self.found = True
+
+				else:
+					self.get_logger().info("Found unknown device on path: {0}".format(device.path))
+					self.get_logger().info("Name: {0}".format(device.name))
+					self.event = device.path.split('/')[-1]
+					self.controller_name = input("Insert Controller Name: ")
 					self.found = True
 
 
@@ -97,8 +104,20 @@ class CalibrateControllerNode(Node):
 
 		self.dev_address = DEV_ADDR + str(self.event)
 
-		self.resources_path = PATH + self.controller_name + "/"
-		self.get_logger().info(self.resources_path)
+		conf_folder = input("Enter Conf Folder Path (Default is install/): \t")
+
+		
+		if not os.path.exists(conf_folder):
+
+			self.get_logger().info("Using Default Conf Folder")
+			self.resources_path = PATH + self.controller_name + "/"
+
+		else:
+			self.get_logger().info("Conf Folder Exists!")
+			self.resources_path = os.path.join(conf_folder, self.controller_name)
+			self.resources_path = self.resources_path + "/"
+
+		self.get_logger().info("Joystick Conf Folder: {0}".format(self.resources_path))
 
 		# Upload calibration data
 		while not self.stop_calib:
@@ -182,7 +201,7 @@ class CalibrateControllerNode(Node):
 						self.get_logger().info("Max Value: {0}".format(maximum_value))
 						break
 
-			steady_value = input("Enter Steady Value the Axis:\t")
+			steady_value = input("Enter Steady Value the Axis: (default is mean)\t")
 
 			try:
 				steady_value = int(steady_value)
