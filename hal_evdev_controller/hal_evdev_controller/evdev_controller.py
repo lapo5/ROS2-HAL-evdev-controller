@@ -19,7 +19,7 @@ from std_srvs.srv import Empty, Trigger
 
 from ament_index_python.packages import get_package_share_directory
 ##### Paths to calibration files
-package_share_directory = get_package_share_directory('evdev_teleop')
+package_share_directory = get_package_share_directory('hal_evdev_controller')
 # Path to store the calibration file
 PATH = package_share_directory + "/conf/"
 

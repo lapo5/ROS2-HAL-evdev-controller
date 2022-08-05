@@ -20,7 +20,7 @@ from teleop_interfaces.msg import AxisCmd, ButtonCmd
 ##### Paths to calibration files
 from ament_index_python.packages import get_package_share_directory
 
-package_share_directory = get_package_share_directory('evdev_teleop')
+package_share_directory = get_package_share_directory('hal_evdev_controller')
 
 PATH = package_share_directory + "/conf/"
 
