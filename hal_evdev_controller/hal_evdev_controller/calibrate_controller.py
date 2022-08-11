@@ -58,7 +58,8 @@ class CalibrateControllerNode(Node):
 			
 			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 			for device in devices:
-				print(device.name)
+				self.get_logger().info("Found device: {0}".format(device.name))
+				
 				if device.name == "Mad Catz Saitek Side Panel Control Deck":
 					self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]

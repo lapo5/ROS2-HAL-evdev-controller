@@ -209,7 +209,7 @@ class ControllerNode(Node):
                 self.discovery_device()
                 if self.found:
                     self.evdev_controller_connected = True
-                    print("Device Re-Connected!")
+                    self.get_logger().info("Device Re-Connected!")
             
             while not self.error and not self.end and self.evdev_controller_connected:
                 try:
@@ -224,7 +224,7 @@ class ControllerNode(Node):
                             continue
 
                 except:
-                    print("Device Disconnected!")
+                    self.get_logger().info("Device Disconnected!")
                     self.evdev_controller_connected = False
 
 
