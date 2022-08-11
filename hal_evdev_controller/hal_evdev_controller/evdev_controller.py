@@ -1,23 +1,25 @@
 #!/usr/bin/env pyhton3
 
 ##### Libraries
-import rclpy
-from rclpy.node import Node
-import evdev
-from evdev import InputDevice, ecodes
 import json
 import threading
 import sys
+import os
 
-##### Interfaces
+import evdev
+from evdev import InputDevice, ecodes
+
+import rclpy
+from rclpy.node import Node
+
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
 from std_msgs.msg import Header
-
 from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty, Trigger
 
 from ament_index_python.packages import get_package_share_directory
+
 ##### Paths to calibration files
 package_share_directory = get_package_share_directory('hal_evdev_controller')
 # Path to store the calibration file
@@ -28,8 +30,6 @@ CALIB_BUTTONS = "buttons_calib.json"
 
 ##### Path to the event log
 DEV_ADDR = "/dev/input/"
-
-
 
 ##### Controller class definition
 class ControllerNode(Node):
@@ -85,13 +85,13 @@ class ControllerNode(Node):
 
             self.resources_path = PATH + self.controller_name + "/"
 
-            self.get_logger().info("Looking for Calibration of Controller {0}".format(self.controller_name))
-            self.get_logger().info("In folder {0}".format(self.resources_path))
+            self.get_logger().info("[HAL EvDev Controller] Calibration Folder {0}".format(self.resources_path))
 
             # Upload calibration data
             try:
                 with open(self.resources_path+CALIB_AXES, "r") as readfile:
                     self.axis_dict = json.load(readfile)
+            
                 with open(self.resources_path+CALIB_BUTTONS, "r") as readfile:
                     self.button_dict = json.load(readfile)
 
@@ -100,10 +100,10 @@ class ControllerNode(Node):
 
             except:
                 self.error = True
-                self.get_logger().info("Calibrate Controller {0} First!".format(self.controller_name))
+                self.get_logger().info("[HAL EvDev Controller] Calibrate Controller {0} First!".format(self.controller_name))
 
             if not self.error:
-                # Definition of the publisher functions
+
                 if self.is_button:
                     self.button_publishers = dict()
                     for button in self.button_dict.keys():
@@ -115,8 +115,6 @@ class ControllerNode(Node):
                     for axis in self.axis_dict.keys():
                         name = self.axis_dict[axis][0]
                         self.axis_publishers[axis] = self.create_publisher(AxisCmd, self.axis_topic+name, 1)
-
-
 
                 self.declare_parameter("publishers.heartbeat", "/evdev_controller/heartbeat")
                 self.heartbeat_topic_name = self.get_parameter("publishers.heartbeat").value
@@ -130,11 +128,11 @@ class ControllerNode(Node):
                 self.initialize_cmds()
                 self.thread1.start()
 
-                # Timers for both axis and buttons publishers
                 self.axis_timer = self.create_timer(1.0/self.rate, self.publish_commands) #50 Hz
-                self.get_logger().info("[EvDev Controller] Node Ready!")
+                self.get_logger().info("[HAL EvDev Controller] Node Ready!")
+
         else:
-            self.get_logger().info("[EvDev Controller] No EvDev Controller found, check connection!")
+            self.get_logger().info("[HAL EvDev Controller] No EvDev Controller found, check connection!")
 
 
     def discovery_device(self):
@@ -178,29 +176,25 @@ class ControllerNode(Node):
                 self.found = True
 
 
-
-
     def stop(self, request, response):
-        self.end = True
 
+        self.end = True
         return response
 
 
     def is_init(self, request, response):
         
         response.success = self.found
-
         return response
 
 
     def initialize_cmds(self):
-        # Initialize axis cmd at the middle value of their excursion
+        
         if self.is_axis:
             self.actual_axis = self.axis_dict.copy()
             for key in self.axis_dict.keys():
                 self.actual_axis[key] = self.axis_dict[key][1][2]
 
-        # Initialize button cmd at 0
         if self.is_button:
             self.actual_button = self.button_dict.copy()
             for key in self.button_dict.keys():
@@ -228,12 +222,14 @@ class ControllerNode(Node):
                             self.actual_button[str(event.code)] = event.value
                         else:
                             continue
+
                 except:
                     print("Device Disconnected!")
                     self.evdev_controller_connected = False
 
 
     def publish_commands(self):
+
         if not self.end and self.evdev_controller_connected:
             for key in self.actual_axis.keys():
                 msg = AxisCmd()
@@ -254,6 +250,7 @@ class ControllerNode(Node):
                 msg.button_cmd = self.actual_button[key]
                 self.button_publishers[key].publish(msg)
 
+
             heartbeat_msg = EmptyMsg()
             self.heartbeat_publisher.publish(heartbeat_msg)
 
@@ -262,7 +259,6 @@ class ControllerNode(Node):
         self.end = True
         
 
-##### Main function to loop
 def main(args=None):
     rclpy.init(args=args)
     node = ControllerNode()
@@ -280,6 +276,5 @@ def main(args=None):
 
 
 
-##### Main Loop
 if __name__ == "__main__":
     main()
