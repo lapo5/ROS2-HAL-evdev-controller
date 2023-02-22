@@ -397,8 +397,6 @@ def main(args=None):
 	except BaseException:
 		node.get_logger().info('[EvDev Calibration] Exception:', file=sys.stderr)
 		raise
-	finally:
-		rclpy.shutdown() 
 
 
 if __name__ == "__main__":

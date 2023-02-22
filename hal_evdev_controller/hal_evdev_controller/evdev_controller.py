@@ -36,8 +36,8 @@ class ControllerNode(Node):
     def __init__(self):
         super().__init__("evdev_controller")
 
-        self.declare_parameter("hz", "50.0")
-        self.rate = float(self.get_parameter("hz").value)
+        self.declare_parameter("hz", 50.0)
+        self.rate = self.get_parameter("hz").value
 
         self.declare_parameter("event", "discovery_event")
         self.event = self.get_parameter("event").value
@@ -168,13 +168,7 @@ class ControllerNode(Node):
                 self.controller_name = "logitech_gamepad_f710"
                 self.found = True
 
-            else:
-                self.get_logger().info("Found unknown device on path: {0}".format(device.path))
-                self.get_logger().info("Name: {0}".format(device.name))
-                self.event = device.path.split('/')[-1]
-                self.controller_name = input("Insert Controller Name (must match controller name on conf folder): ")
-                self.found = True
-
+                
 
     def stop(self, request, response):
 
@@ -272,8 +266,6 @@ def main(args=None):
     except BaseException:
         node.get_logger().info('[EvDev Controller] Exception:', file=sys.stderr)
         raise
-    finally:
-        rclpy.shutdown() 
 
 
 if __name__ == "__main__":
