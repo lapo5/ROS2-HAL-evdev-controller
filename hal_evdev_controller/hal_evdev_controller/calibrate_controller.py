@@ -1,23 +1,23 @@
 #!/usr/bin/env pyhton3
 
 ##### Libraries
-import rclpy
-from rclpy.node import Node
-from evdev import InputDevice, ecodes
 import json
 import os
 import threading
 import shutil
 import statistics
-import evdev
-from evdev import InputDevice, ecodes
 import sys
 import math
 
-##### Interfaces
+import evdev
+from evdev import InputDevice, ecodes
+
+import rclpy
+from rclpy.node import Node
+from evdev import InputDevice, ecodes
+
 from teleop_interfaces.msg import AxisCmd, ButtonCmd
 
-##### Paths to calibration files
 from ament_index_python.packages import get_package_share_directory
 
 package_share_directory = get_package_share_directory('hal_evdev_controller')
@@ -28,7 +28,6 @@ CALIB_AXES = "axes_calib.json"
 CALIB_BUTTONS = "buttons_calib.json"
 
 DEV_ADDR = "/dev/input/"
-
 
 class CalibrateControllerNode(Node):
 	def __init__(self):
@@ -55,12 +54,12 @@ class CalibrateControllerNode(Node):
 
 		self.found = False
 
-		print(self.event)
 		if self.event == "discovery_event":
 			
 			devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
 			for device in devices:
-				print(device.name)
+				self.get_logger().info("Found device: {0}".format(device.name))
+				
 				if device.name == "Mad Catz Saitek Side Panel Control Deck":
 					self.get_logger().info("Found LogitechPanel on path: {0}".format(device.path))
 					self.event = device.path.split('/')[-1]
@@ -104,11 +103,9 @@ class CalibrateControllerNode(Node):
 
 		self.dev_address = DEV_ADDR + str(self.event)
 
-		conf_folder = input("Enter Conf Folder Path (Default is install/): \t")
-
+		conf_folder = input("Enter Conf Folder Path (Default is install): \t")
 		
 		if not os.path.exists(conf_folder):
-
 			self.get_logger().info("Using Default Conf Folder")
 			self.resources_path = PATH + self.controller_name + "/"
 
@@ -121,7 +118,7 @@ class CalibrateControllerNode(Node):
 
 		# Upload calibration data
 		while not self.stop_calib:
-			key = input("Calibrate the axes? [y/else]:\t")
+			key = input("Calibrate the axes? [y/n]:\t")
 			
 			# Fast check after input
 			if key == "Y" or key == 'y':
@@ -130,7 +127,7 @@ class CalibrateControllerNode(Node):
 				self.get_logger().info("Calibration is over...")
 				self.is_axis = True
 
-			key = input("Calibrate the buttons? [y/else]:\t")
+			key = input("Calibrate the buttons? [y/n]:\t")
 			
 			# Fast check after input
 			if key == "Y" or key == 'y':
@@ -146,7 +143,6 @@ class CalibrateControllerNode(Node):
 
 	def calibrate_controller_axes(self, size_th):
 
-		# Initialization of some variables
 		key = None
 		cmd_candidates = dict()
 		cmd_dict = dict()
@@ -154,11 +150,8 @@ class CalibrateControllerNode(Node):
 		while(key != "Q"):
 			key = input("Type the name of the command to be registered or press Q to terminate.\n")
 			
-			# Fast check after input
 			if key == "Q" or key == 'q':
 				break
-
-			# Iterate all the registered events
 			
 			input("Press Enter and Start Moving Axis")
 
@@ -179,8 +172,9 @@ class CalibrateControllerNode(Node):
 					ret, cmd_code = self.check_subject_cmd(cmd_candidates, size_th)
 
 					if ret:
-						self.get_logger().info("cmd_code: {0}".format(cmd_code))
+						self.get_logger().info("[Axis Calibration] cmd_code: {0}".format(cmd_code))
 						break
+
 
 			input("Press Enter and Move Axis to Minimum and Maximum")
 			values = []
@@ -197,8 +191,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						self.get_logger().info("Min Value: {0}".format(minimum_value))
-						self.get_logger().info("Max Value: {0}".format(maximum_value))
+						self.get_logger().info("[Axis Calibration] Min Value: {0}".format(minimum_value))
+						self.get_logger().info("[Axis Calibration] Max Value: {0}".format(maximum_value))
 						break
 
 			steady_value = input("Enter Steady Value the Axis: (default is mean)\t")
@@ -213,8 +207,10 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		self.get_logger().info("cmd_dict: {0}".format(cmd_dict))
+
+		self.get_logger().info("[Calibrate Controller] Axes Dictionary: \n{0}\n".format(cmd_dict))
 		return cmd_dict
+
 
 	### This function defines a dictionary with command name and range of values
 	def calibrate_controller_buttons(self, size_th):
@@ -227,7 +223,6 @@ class CalibrateControllerNode(Node):
 		while(key != "Q"):
 			key = input("Type the name of the command to be registered or press Q to terminate.\n")
 			
-			# Fast check after input
 			if key == "Q" or key == 'q':
 				break
 
@@ -251,7 +246,7 @@ class CalibrateControllerNode(Node):
 					ret, cmd_code = self.check_subject_cmd(cmd_candidates, size_th)
 
 					if ret:
-						self.get_logger().info("cmd_code: {0}".format(cmd_code))
+						self.get_logger().info("[Button Calibration] cmd_code: {0}".format(cmd_code))
 						break
 
 			input("Press Enter and Move Button Again")
@@ -270,8 +265,8 @@ class CalibrateControllerNode(Node):
 					ret, minimum_value, maximum_value = self.check_minmax_cmd(values, size_th)
 
 					if ret:		
-						self.get_logger().info("Min Value: {0}".format(minimum_value))
-						self.get_logger().info("Max Value: {0}".format(maximum_value))	
+						self.get_logger().info("[Button Calibration] Min Value: {0}".format(minimum_value))
+						self.get_logger().info("[Button Calibration] Max Value: {0}".format(maximum_value))	
 						break
 
 			cmd_dict[cmd_code] = [key, [minimum_value, maximum_value]]
@@ -279,11 +274,10 @@ class CalibrateControllerNode(Node):
 			# Reset the local dictionary
 			cmd_candidates = dict()
 
-		self.get_logger().info("cmd_dict: {0}".format(cmd_dict))
+		self.get_logger().info("[Calibrate Controller] Buttons Dictionary: \n{0}\n".format(cmd_dict))
 		return cmd_dict
 
 
-	### This function check the subject command to be stored
 	def check_subject_cmd(self, candidates, lim_size):
 
 		best_candidate_len = 0
@@ -310,7 +304,6 @@ class CalibrateControllerNode(Node):
 		minumum = None
 		maximum = None
 
-		# Solve a maximum problem with a threshold given by lim_size
 		if len(candidates) >= lim_size:
 			
 			is_enough = True
@@ -325,7 +318,6 @@ class CalibrateControllerNode(Node):
 		is_enough = False
 		steady_value = None
 
-		# Solve a maximum problem with a threshold given by lim_size
 		if len(candidates) >= lim_size:
 			
 			is_enough = True
@@ -339,7 +331,6 @@ class CalibrateControllerNode(Node):
 		is_enough = False
 		maximum = None
 
-		# Solve a maximum problem with a threshold given by lim_size
 		if len(candidates) >= lim_size:
 			
 			is_enough = True
@@ -363,7 +354,7 @@ class CalibrateControllerNode(Node):
 				self.get_logger().info(f"Name: {self.button_dict[button][0]}\tCode: {button}\tRange: {self.button_dict[button][1]}\n")
 
 		# If calibration is successful, let the user store it as a JSON file
-		key = input("Do you want to save this calibration? [y/else]:\t")
+		key = input("Do you want to save this calibration? [y/n]:\t")
 
 		if key == "y" or key == "Y":
 
@@ -385,17 +376,16 @@ class CalibrateControllerNode(Node):
 				with open(self.resources_path+CALIB_BUTTONS, "w+") as outfile:
 					json.dump(self.button_dict, outfile)
 
-			self.get_logger().info("Calibration data have been saved successfully.")
+			self.get_logger().info("[Calibrate Controller] Calibration data have been saved successfully.")
 			return True
 
 		else:
 
-			self.get_logger().info("Calibration data have been deleted. Try again.")
+			self.get_logger().info("[Calibrate Controller] Calibration data have been deleted. Try again.")
 			return False
 
-		
 
-
+##### Main Function #####
 def main(args=None):
 	rclpy.init(args=args)
 	node = CalibrateControllerNode()
@@ -407,11 +397,7 @@ def main(args=None):
 	except BaseException:
 		node.get_logger().info('[EvDev Calibration] Exception:', file=sys.stderr)
 		raise
-	finally:
-		rclpy.shutdown() 
 
 
-
-##### Main Loop
 if __name__ == "__main__":
 	main()
