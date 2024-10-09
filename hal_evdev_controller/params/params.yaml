@@ -3,7 +3,7 @@ evdev_controller:
     hz: 50.0   # Rate
 
     event: discovery_event   # Evdev path
-    controller_name: logitech_panel # Name of controller, if discovery ignored
+    controller_name: slide_winder # Name of controller, if discovery ignored
 
     publishers:
       button_subset: /teleop_cmd/button/
